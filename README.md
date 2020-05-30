@@ -1,32 +1,48 @@
-## Welcome to GitHub Pages
+# Introduction to Spark ML
 
-You can use the [editor on GitHub](https://github.com/akisiel1/introSparkML/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Here you can find the lightweight introduction to Spark ML.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Agenda
 
-### Markdown
+1. [What is Spark and what it's relationship with DataBricks?](#what-is-spark)
+2. [A small overview of Spark's architecture.](#sparks-architecture)
+3. [Let's play: set up the Azure DataBricks and create your first cluster.](#azure-databricks-set-up)
+4. [Excersise with Aga: simple Machine Learning's excersise.](#ml-excersise)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+# What is Spark?
 
-```markdown
-Syntax highlighted code block
+Apache Spark is an analitics engine, created to large-scale data processing. 
 
-# Header 1
-## Header 2
-### Header 3
+Main advatages are:
+- it is fast
+- it is easy to use (Python, Scala, R, Java and SQL)
+- it is powerful (without anything to do, you can use SQL, DataFrame, MLib, GraphX and SPark Streaming)
+- it runs almost everywhere (Kubernetes, DataBricks, Hadoop and mony others)
 
-- Bulleted
-- List
+Example:
+```
+textFile = sc.textFile("hdfs://...")
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+# Creates a DataFrame having a single column named "line"
+df = textFile.map(lambda r: Row(r)).toDF(["line"])
+errors = df.filter(col("line").like("%ERROR%"))
+# Counts all the errors
+errors.count()
+# Counts errors mentioning MySQL
+errors.filter(col("line").like("%MySQL%")).count()
+# Fetches the MySQL errors as an array of strings
+errors.filter(col("line").like("%MySQL%")).collect()
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+# Spark's architecture
+
+
+
+# Azure DataBricks set up
+
+# ML excersise
+
+Titanic excersise.
 
 ### Jekyll Themes
 
