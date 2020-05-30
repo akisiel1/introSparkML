@@ -11,7 +11,9 @@ Here you can find the lightweight introduction to Spark ML.
 
 # What is Spark?
 
-Apache Spark is an analitics engine, created to large-scale data processing. 
+Apache Spark is an unified analitics engine, created to large-scale data processing. Unified, because you can run the same method to work on static (csv) files or some real-time data (streams). 
+
+It is **the best for large-scale**, not for small, one compute. **Spark is about processing**, not about the storage.
 
 Main advatages are:
 - it is fast
@@ -36,7 +38,23 @@ errors.filter(col("line").like("%MySQL%")).collect()
 
 # Spark's architecture
 
+Spark's architecture is layered. Like ogrs. Or onions (but who like onion...).
 
+![architecture](https://github.com/akisiel1/introSparkML/blob/master/images/architecture.png)
+
+Spark Core is all about the distribution
+RDD is first, original API but it is slow and not optimized
+DataFrames API is most developed api to interact with sql-like table data - modern API
+Dataframe = SQL are optimized equally
+RDD (especially Python) is extremely slow.
+
+Newest: Spark ML, Structured Streaming (not SparkStreaming), GraphFrames (not GraphX)
+Modern APIs: DataFrame, Dataset, Spark SQL
+RDD - low level, DON’T USER IT UNSELL YOU ABOSULUTELY NEED IT
+Spark Core: Distributed Engine
+
+
+Spark gets best results when it is running on a cluster. 
 
 # Azure DataBricks set up
 
