@@ -190,12 +190,43 @@ Another service needed for te excersise is Azure Storage, where we will keep the
 
 # ML excersise
 
-Titanic excersise.
+Our excersise will be solve known ML problem: predict who will survive the Titanic catastrophy. More about the problem you can found on [Kaggle](https://www.kaggle.com/c/titanic/overview).
 
-### Jekyll Themes
+What we will do?
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/akisiel1/introSparkML/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+1. Load the data.
+2. Check the correlation between features and label. 
+4. Handle the null values: mean, average.
+3. Combine columns: FamilyMembers, IsAlone, FarePerPerson.
+5. Use Logistic regression to learn the model.
+6. Evaluate the model.
+7. Apply pipeline to control learning.
 
-### Support or Contact
+#### Load the data
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+```
+dbutils.fs.mount(
+  source = "wasbs://<container-name>@<storage-account-name>.blob.core.windows.net",
+  mount_point = "/mnt/titanic_data",
+  extra_configs = {"<conf-key>":dbutils.secrets.get(scope = "<scope-name>", key = "<key-name>")})
+```
+where:
+- <mount-name> is a DBFS path representing where the Blob storage container or a folder inside the container (specified in source) will be mounted in DBFS.
+- <conf-key> can be either fs.azure.account.key.<storage-account-name>.blob.core.windows.net or fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net
+- dbutils.secrets.get(scope = "<scope-name>", key = "<key-name>") gets the key that has been stored as a secret in a secret scope.
+	
+Then you can read file: `test_df = spark.read.csv("/mnt/<mount-name>/test")`
+
+Or you can connect the blob container
+```
+spark.conf.set(
+  "fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net",
+  "<complete-query-string-of-sas-for-the-container>")
+```
+
+and then read file `val df = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")`
+
+
+#### Check the relevance of features
+
+
