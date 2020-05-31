@@ -80,7 +80,7 @@ For some more, check [Spark's guideline](https://spark.apache.org/docs/latest/tu
 
 # Spark's architecture
 
-Spark's architecture is layered. Like ogrs. Or onions (but who like onion...).
+Spark's architecture is layered. Like ogrs. Or onions (but who likes onion...).
 
 ![architecture](https://github.com/akisiel1/introSparkML/blob/master/images/architecture.png)
 
