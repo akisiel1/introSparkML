@@ -7,7 +7,7 @@ Here you can find the lightweight introduction to Spark ML.
 1. [What is Spark and what it's relationship with DataBricks?](#what-is-spark)
 2. [A small overview of Spark's architecture.](#sparks-architecture)
 3. [Spark's Machine Learning explained](#sparks-machine-learning-explained)
-4. [Let's play: set up the Azure DataBricks and create your first cluster.](#azure-databricks-set-up)
+4. [Let's play: set up the Azure DataBricks and create your first cluster.](#azure-setup)
 5. [Excersise with Aga: simple Machine Learning's excersise.](#ml-excersise)
 
 # What is Spark?
@@ -61,6 +61,12 @@ Parquet features:
 - Columnar format
 - Binary
 - Has internal statistics - divides file for 32 records' blocks and keep some statistics for each block
+
+## DataBricks
+
+The easiest way to enjoy Spark in Azure world is to use the [DataBricks](https://docs.databricks.com/index.html#). DataBricks is an Unified Data Analytics Platform, which consist of a number of usefull libraries and tools for data engineering and data science. Spark is just one of the tools, others are: Data Lake, MLFlow, TensorFlow, PyTorch and many others. 
+
+![DataBricks](https://github.com/akisiel1/introSparkML/blob/master/images/Marketecture.png)
 
 ## Performance tuning
 
@@ -137,7 +143,8 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
   - Is a special type of estimator
   - Consist of multiple stages
   - You can export it (save()) and load back (load()) as well
-  - Example: ![pipeline example](https://github.com/akisiel1/introSparkML/blob/master/images/pipeline_example.png)
+  - Example: 
+![pipeline example](https://github.com/akisiel1/introSparkML/blob/master/images/pipeline_example.png)
 	
 4.  Evaluators  
   - To run the evaluation, call the evaluate() method
@@ -145,12 +152,41 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
   - Examples:
      - RegressionEvaluator
      - BinaryClassyficationEvaluator
-		 - MultiClassClasifficationEvaluator
+     - MultiClassClasifficationEvaluator
      - ClusteringEvaluator
 
-# Azure DataBricks set up
+# Azure setup
 
+## Azure DataBricks setup 
 
+Before we will start with our ML excersise, we need to set up environments for it. Follow thos steps:
+
+0. Create a resource group where you will keep all excersise-related services.
+1. Create a DataBricks service within your VS subscription:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20093437.png)
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20093600.png)
+2. After resource will be deployed, launch the Workspace:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20094847.png)
+3. To use the DataBricks you need to create a cluster. First, go to the Clusters:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095007.png)
+and click "Create Cluster":
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095034.png)
+4. Set up the cluster with following settings:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095349.png)
+
+Creation will take some longer time.
+
+## Azure Storage setup
+
+Another service needed for te excersise is Azure Storage, where we will keep the data.
+
+1. In your resource group, add Azure Storage service:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20101103.png)
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20101145.png)
+2. Create a Blob Container where you will keep your data:
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20110813.png)
+![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20110939.png)
+3. Download data from [Kaggle](https://www.kaggle.com/c/titanic/data) and upload it into your container.
 
 # ML excersise
 
