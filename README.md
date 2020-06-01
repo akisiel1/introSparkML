@@ -127,7 +127,7 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
   - Transformer analyses only on one row
   - Examples:
      - MLModel
-     - VectorAssembler: `"Col value" => ["col values"]`
+     - VectorAssembler: `Col value" => ["col values"]`
      - IndexToString
      - Pipeline
 
@@ -197,13 +197,15 @@ What we will do?
 - Load the data.
 - Handle the null values: mean, average.
 - Combine columns: FamilyMembers, IsAlone, FarePerPerson.
+- Removal of null values.
+- Categorical values
 - OneHotEncoding for categorical features.
 - Check the correlation between features and label. 
-- Use Logistic regression to learn the model.
+- Use Linear Regression to learn the model.
 - Evaluate the model.
 - Apply pipeline to control learning.
 
-#### Load the data
+### Load the data
 
 There are few of ways to load the data from Azure Blob. Simplest one is to connect the blob container:
 ```
@@ -211,7 +213,7 @@ spark.conf.set(
   "fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net",
   "<complete-query-string-of-sas-for-the-container>")
 ```
-and then read file `val df = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")`
+and then read file ```train_data = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")```
 
 Other is to mount the container as a disk:
 
@@ -226,8 +228,116 @@ where:
 - <conf-key> can be either fs.azure.account.key.<storage-account-name>.blob.core.windows.net or fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net
 - dbutils.secrets.get(scope = "<scope-name>", key = "<key-name>") gets the key that has been stored as a secret in a secret scope.
 	
-Then you can read file: `test_df = spark.read.csv("/mnt/<mount-name>/test")`
+Then you can read file: ```train_data = spark.read.csv("/mnt/<mount-name>/train")```
 
-#### Check the relevance of features
+### Data Cleansing
+#### Handle the null values: mean, average.
+
+To see how many null values are per each column run:
+```
+from pyspark.sql.functions import isnull, when, count, col
+
+train_df.select([count(when(isnull(c), c)).alias(c) for c in train_df.columns]).show()
+```
+
+As you all know there are multiple ways how to handle the null values, both general ways (eg. replace with some value) or manual. Spark provides class called `Imputer` which helps you to impute missing values. 
+
+Question: will `Imputer` be transformer or estimator?
+
+But our case we will handle Age manually, rest will be omitted.
+```
+def handle_missing_age(df: DataFrame) -> DataFrame:
+    _df = df
+    _df = _df.withColumn('Age', 
+           F.when((F.isnull(_df['Age'])) & (_df['Initial'] == 'Mr') , 33 )\
+            .otherwise(F.when((F.isnull(_df['Age'])) 
+                              & (_df['Initial'] == 'Mrs') , 36)\
+            .otherwise(F.when((F.isnull(_df['Age'])) 
+                              & (_df['Initial'] == 'Master') , 5)\
+            .otherwise(F.when((F.isnull(_df['Age'])) 
+                              & (_df['Initial'] == 'Miss') , 22)\
+            .otherwise(F.when((F.isnull(_df['Age'])) 
+                              & (_df['Initial'] == 'Other') , 46)\
+            .otherwise(_df['Age']) )))))
+    return _df
+```
+
+#### Combine columns: FamilyMembers, IsAlone, FarePerPerson
+
+Firstly, let's add new column, which will contain an information about number of members in passengers family:
+```
+def create_family_size(df: DataFrame) -> DataFrame:
+  _df = df.withColumn('FamilySize', df['Parch'] + df['SibSp'] + 1 )
+  return _df
+```
+
+Then, define if passenger travels alone:
+```
+def create_is_alone(df: DataFrame) -> DataFrame:
+  _df = df.withColumn('IsAlone', F.when(df['FamilySize'] > 1, 0).otherwise(1))
+  return _df
+```
+
+Lastly, calculate fare per person:
+```
+def create_fare_per_person(df: DataFrame) -> DataFrame:  
+  _df = df.withColumn('FarePerPerson', df['Fare'] /df['FamilySize'])
+  return _df
+```
+
+Let's apply all on our data:
+```
+train_df = handle_missing_age(evaluate_initials(create_fare_per_person(create_is_alone(create_family_size(train_df)))))
+```
+
+#### Removal of null values
+
+For some cases you might want to remove the rows which has null values for some data:
+```
+def drop_rows_with_null(df: DataFrame, col) -> DataFrame:
+  _df = df = df.filter(df[col].isNotNull())
+  return _df
+```
+
+We want to get rid of empyt value for Embarked, since it's just two rows:
+```
+train_df = drop_rows_with_null(train_df, 'Embarked')
+```
+
+#### Categorical values
+
+Most of algorithms works better, or even can handle only the numerical values. There are number of ways to transform categorical values into numbers. The simplest one given by Spark ML is probably `StringIndexer` class. Usage is very simple:
+
+```
+def change_to_index(df: DataFrame, col) -> DataFrame:
+  indexer = StringIndexer(inputCol=col, outputCol='{0}_indexed'.format(col))
+  _df = indexer.fit(df).transform(df)
+  return _df
+```
+
+As it was metined before, `StringIndexer` is an estimator, because it needs to analyse whole set of data.
+
+#### OneHotEncoding for categorical features
+
+When it comes to working better and quicker with data, OneHotEncoding is also a good choice. So after transforming data into number, we can also transform it into the OneHot form:
+
+```
+def change_to_one_hot_encoded(df: DataFrame, cols) -> DataFrame:
+  for col in cols:
+    df = change_to_index(df, col)
+  col_indexed = ['{0}_indexed'.format(col) for col in cols]
+  col_encoded = ['{0}_encoded'.format(col) for col in cols]
+  encoder = OneHotEncoderEstimator(inputCols=col_indexed, outputCols=col_encoded)
+  _df = encoder.fit(df).transform(df)
+  return _df
+```
+
+And applying: ```train_df = change_to_one_hot_encoded(train_df, ['Sex', 'Initial', 'Embarked'])```
+
+### Use Linear Regression to learn the model
 
 
+
+### Evaluate the model
+
+### Apply pipeline to control learning
