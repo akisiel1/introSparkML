@@ -336,8 +336,47 @@ And applying: ```train_df = change_to_one_hot_encoded(train_df, ['Sex', 'Initial
 
 ### Use Linear Regression to learn the model
 
+[Spark ML](https://spark.apache.org/docs/latest/ml-classification-regression.html) contains a big number of machine learning's algorithms' implementations. I've chosen probably the simplest one to show, but you can easly change it and use any other. 
 
+Most of the algorithms works on vectors. We need to translate our features into vectors then:
+```
+cols = [c for c in train_df.columns if c != 'Survived']
+assembler = VectorAssembler(inputCols=cols, outputCol="Features")
+vec_train_df = assembler.transform(train_df)
+```
+Then it's time to learn our model:
+```
+lr = LinearRegression(featuresCol="Features", labelCol="Survived")
+model = lr.fit(vec_train_df)
+```
 
 ### Evaluate the model
 
+To evaluate a model, start with transforming test DataFrame (do not forget to run data cleansing on test_df!):
+```
+vec_test_df = assembler.transform(test_df)
+pred_df = model.transform(vec_test_df)
+```
+By default, transformation will add a column named `prediction` with predicted value. Let's evaluate how good it has predicted a value:
+```
+regression_evaluator = RegressionEvaluator(predictionCol="prediction", labelCol="Survived", metricName="rmse")
+
+rmse = regression_evaluator.evaluate(pred_df)
+print(f"RMSE is {rmse}")
+```
+
 ### Apply pipeline to control learning
+
+Spark ML has one great feature called `Pipeline`. It helps setting up and running stages much more easy. 
+
+```
+stages = []
+pipeline = Pipeline(stages=stages)
+pipeline_model = pipeline.fit(train_df)
+```
+Also it allows you to save your model in DataBricks.
+
+```
+pipeline_path = userhome + "/machine-learning-p/lr_pipeline_model"
+pipeline_model.write().overwrite().save(pipeline_path)
+```
