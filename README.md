@@ -82,7 +82,7 @@ For some more, check [Spark's guideline](https://spark.apache.org/docs/latest/tu
 
 Spark's architecture is layered. Like ogrs. Or onions (but who likes onion...).
 
-![architecture](https://github.com/akisiel1/introSparkML/blob/master/images/architecture.png)
+![architecture](images/architecture.png)
 
 First layer is Spark Core. This is Distributed Engine.
 
@@ -96,7 +96,7 @@ The most top layer is the newest: Spark ML, Structured Streaming (not SparkStrea
 
 Spark gets the best results when it runs on a cluster. 
 
-![Spark's cluster architecture](https://github.com/akisiel1/introSparkML/blob/master/images/hdi-spark-architecture.png)
+![Spark's cluster architecture](images/hdi-spark-architecture.png)
 
 Cluster contains of **the Driver** and **the Workers**.
 
@@ -144,7 +144,7 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
   - Consist of multiple stages
   - You can export it (save()) and load back (load()) as well
   - Example: 
-![pipeline example](https://github.com/akisiel1/introSparkML/blob/master/images/pipeline_example.png)
+![pipeline example](images/pipeline_example.png)
 	
 4.  Evaluators  
   - To run the evaluation, call the evaluate() method
@@ -163,16 +163,16 @@ Before we will start with our ML excersise, we need to set up environments for i
 
 0. Create a resource group where you will keep all excersise-related services.
 1. Create a DataBricks service within your VS subscription:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20093437.png)
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20093600.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20093437.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20093600.png)
 2. After resource will be deployed, launch the Workspace:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20094847.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20094847.png)
 3. To use the DataBricks you need to create a cluster. First, go to the Clusters:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095007.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20095007.png)
 and click "Create Cluster":
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095034.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20095034.png)
 4. Set up the cluster with following settings:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20095349.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20095349.png)
 
 Creation will take some longer time.
 
@@ -181,11 +181,11 @@ Creation will take some longer time.
 Another service needed for te excersise is Azure Storage, where we will keep the data.
 
 1. In your resource group, add Azure Storage service:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20101103.png)
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20101145.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20101103.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20101145.png)
 2. Create a Blob Container where you will keep your data:
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20110813.png)
-![](https://github.com/akisiel1/introSparkML/blob/master/images/DataBricks_setup/Annotation%202020-05-31%20110939.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20110813.png)
+![](images/DataBricks_setup/Annotation%202020-05-31%20110939.png)
 3. Download data from [Kaggle](https://www.kaggle.com/c/titanic/data) and upload it into your container.
 
 # ML excersise
