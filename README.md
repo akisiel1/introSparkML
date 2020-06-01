@@ -66,7 +66,7 @@ Parquet features:
 
 The easiest way to enjoy Spark in Azure world is to use the [DataBricks](https://docs.databricks.com/index.html#). DataBricks is an Unified Data Analytics Platform, which consist of a number of usefull libraries and tools for data engineering and data science. Spark is just one of the tools, others are: Data Lake, MLFlow, TensorFlow, PyTorch and many others. 
 
-![DataBricks](https://github.com/akisiel1/introSparkML/blob/master/images/Marketecture.png)
+![DataBricks](images/Marketecture.png)
 
 ## Performance tuning
 
@@ -194,15 +194,26 @@ Our excersise will be solve known ML problem: predict who will survive the Titan
 
 What we will do?
 
-1. Load the data.
-2. Check the correlation between features and label. 
-4. Handle the null values: mean, average.
-3. Combine columns: FamilyMembers, IsAlone, FarePerPerson.
-5. Use Logistic regression to learn the model.
-6. Evaluate the model.
-7. Apply pipeline to control learning.
+- Load the data.
+- Handle the null values: mean, average.
+- Combine columns: FamilyMembers, IsAlone, FarePerPerson.
+- OneHotEncoding for categorical features.
+- Check the correlation between features and label. 
+- Use Logistic regression to learn the model.
+- Evaluate the model.
+- Apply pipeline to control learning.
 
 #### Load the data
+
+There are few of ways to load the data from Azure Blob. Simplest one is to connect the blob container:
+```
+spark.conf.set(
+  "fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net",
+  "<complete-query-string-of-sas-for-the-container>")
+```
+and then read file `val df = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")`
+
+Other is to mount the container as a disk:
 
 ```
 dbutils.fs.mount(
@@ -216,16 +227,6 @@ where:
 - dbutils.secrets.get(scope = "<scope-name>", key = "<key-name>") gets the key that has been stored as a secret in a secret scope.
 	
 Then you can read file: `test_df = spark.read.csv("/mnt/<mount-name>/test")`
-
-Or you can connect the blob container
-```
-spark.conf.set(
-  "fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net",
-  "<complete-query-string-of-sas-for-the-container>")
-```
-
-and then read file `val df = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")`
-
 
 #### Check the relevance of features
 
