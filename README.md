@@ -213,7 +213,7 @@ spark.conf.set(
   "fs.azure.sas.<container-name>.<storage-account-name>.blob.core.windows.net",
   "<complete-query-string-of-sas-for-the-container>")
 ```
-and then read file ```train_data = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")```
+and then read file ```data = spark.read.csv("wasbs://<container-name>@<storage-account-name>.blob.core.windows.net/<file-name>")```
 
 Other is to mount the container as a disk:
 
@@ -229,6 +229,10 @@ where:
 - dbutils.secrets.get(scope = "<scope-name>", key = "<key-name>") gets the key that has been stored as a secret in a secret scope.
 	
 Then you can read file: ```train_data = spark.read.csv("/mnt/<mount-name>/train")```
+
+### Split to train and test data
+
+For trainig purposes it is good to split train dataset to two: actual train and test dataset. We can do it using statetement ```train_df, test_df = data.randomSplit([0.9, 0.1], seed=42)```
 
 ### Data Cleansing
 #### Handle the null values: mean, average.
@@ -278,10 +282,19 @@ def create_is_alone(df: DataFrame) -> DataFrame:
   return _df
 ```
 
-Lastly, calculate fare per person:
+After that, calculate fare per person:
 ```
 def create_fare_per_person(df: DataFrame) -> DataFrame:  
   _df = df.withColumn('FarePerPerson', df['Fare'] /df['FamilySize'])
+  return _df
+```
+
+Lastly, let's create a new column which will inform us about the initial of the passenger:
+```
+def evaluate_initials(df: DataFrame) -> DataFrame:
+  dizip_initials = {k:v for k,v in (zip(['Mlle','Mme','Ms','Dr', 'Major','Lady','Countess', 'Jonkheer','Col','Rev', 'Capt','Sir','Don'], ['Miss','Miss','Miss', 'Mr','Mr','Mrs','Mrs', 'Other','Other','Other', 'Mr','Mr','Mr']))}
+  _df = df.withColumn('Initial',  F.regexp_extract( df['Name'], ('([A-Za-z]+)\.'),1 ) )
+  _df = _df.replace(dizip_initials,1,'Initial')
   return _df
 ```
 
@@ -367,7 +380,7 @@ print(f"RMSE is {rmse}")
 
 ### Apply pipeline to control learning
 
-Spark ML has one great feature called `Pipeline`. It helps setting up and running stages much more easy. 
+Spark ML has one great feature called `Pipeline`. It helps setting up, manupulating and running whole pipeline. Pipeline is specific type of estimator, so you can only run `fit` on it.
 
 ```
 stages = []
@@ -380,3 +393,61 @@ Also it allows you to save your model in DataBricks.
 pipeline_path = userhome + "/machine-learning-p/lr_pipeline_model"
 pipeline_model.write().overwrite().save(pipeline_path)
 ```
+
+You can create a custom transformer/estimator and use it as a stage. To do it (and has ability to save model and load), you need to implement as follow:
+
+- inherit from classes: `Transformer` or `Estimator`, `DefaultParamsReadable`, `DefaultParamsWritable`
+- implement constructor:
+```
+@keyword_only
+  def __init__(self):
+    super(ClassName, self).__init__()
+```
+- implement wanted method: `_transform` or `_fit`
+- add class to running module:
+```
+m = __import__("__main__")
+setattr(m, 'ClassName', ClassName)
+```
+- in case of some input param also:
+   - add property of type param, eg:
+   ```
+   col = Param(Params._dummy(), "col", "column", typeConverter=TypeConverters.toString)
+   ```
+   - add getter and setter method, eg:
+   ```
+   def setCol(self, value):
+      return self._set(col=value)
+
+   def getCol(self):
+      return self.getOrDefault(self.col)
+   ```
+   - remeber of using getter method when you access property in `_transform` method
+ 
+ 
+ Example of custom transformer:
+ ```
+ class DropRowsWithNullTransformer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
+  def __init__(self): 
+    super(DropRowsWithNullTransformer, self).__init__()
+  
+  col = Param(Params._dummy(), "col", "column", typeConverter=TypeConverters.toString)
+
+  def setCol(self, value):
+      return self._set(col=value)
+
+  def getCol(self):
+      return self.getOrDefault(self.col)
+
+  def _transform(self, df: DataFrame) -> DataFrame:
+    _df = df = df.filter(df[self.getCol()].isNotNull())
+    return _df
+
+setattr(m, 'DropRowsWithNullTransformer', DropRowsWithNullTransformer)
+```
+ 
+and usage:
+```
+drop_rows_with_null_trans = DropRowsWithNullTransformer()
+drop_rows_with_null_trans.setCol('Embarked')
+ ```
