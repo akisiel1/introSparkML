@@ -129,7 +129,6 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
      - MLModel
      - VectorAssembler: `Col value" => ["col values"]`
      - IndexToString
-     - Pipeline
 
 2. Estimator
   - To run the estimation (eg. train the model), call fit() method
@@ -138,6 +137,7 @@ Sparks' ML is pretty nicely unified. It has 4 Filars:
      - ML algorithms
      - StringIndexer `Cat => int`
      - OneHotEncoderEstimator
+     - Pipeline
 		
 3. Pipeline
   - Is a special type of estimator
@@ -393,10 +393,18 @@ Also it allows you to save your model in DataBricks.
 pipeline_path = userhome + "/machine-learning-p/lr_pipeline_model"
 pipeline_model.write().overwrite().save(pipeline_path)
 ```
+Then you can easily load the model and use it later:
+```
+from pyspark.ml import PipelineModel
+savedPipelineModel = PipelineModel.load(pipelinePath)
+pred_df = savedPipelineModel.transform(test_df)
+```
+
+#### Create custom pipeline stage
 
 You can create a custom transformer/estimator and use it as a stage. To do it (and has ability to save model and load), you need to implement as follow:
 
-- inherit from classes: `Transformer` or `Estimator`, `DefaultParamsReadable`, `DefaultParamsWritable`
+- inherit from classes: (`Transformer` or `Estimator`) and `DefaultParamsReadable` and `DefaultParamsWritable`
 - implement constructor:
 ```
 @keyword_only
